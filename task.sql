@@ -210,3 +210,196 @@ INSERT INTO sales_order_details VALUES('O46866', 'P07965', 1, 0, 8400);
 INSERT INTO sales_order_details VALUES('O46866', 'P07975', 1, 0, 1050);
 INSERT INTO sales_order_details VALUES('O19008', 'P00001', 10, 5, 525);
 INSERT INTO sales_order_details VALUES('O19008', 'P07975', 5, 3, 1050);
+
+-- Exercise
+-- a
+
+SELECT name
+FROM client_master
+WHERE name LIKE '_a%';
+
+-- +----------------+
+-- | name           |
+-- +----------------+
+-- | Mamta Muzumdar |
+-- | Hansel Colaco  |
+-- +----------------+
+-- 2 rows in set (0.00 sec)
+
+-- b
+
+SELECT client_no, name, city
+FROM client_master
+WHERE city LIKE 'M%';
+
+-- +-----------+----------------+-----------+
+-- | client_no | name           | city      |
+-- +-----------+----------------+-----------+
+-- | C00001    | Ivan Bayross   | Mumbai    |
+-- | C00002    | Mamta Muzumdar | Madras    |
+-- | C00003    | Chhaya Bankar  | Mumbai    |
+-- | C00005    | Hansel Colaco  | Mumbai    |
+-- | C00006    | Deepak Sharma  | Mangalore |
+-- +-----------+----------------+-----------+
+-- 5 rows in set (0.00 sec)
+
+-- c
+
+SELECT client_no, name, city
+FROM client_master
+WHERE (city = 'Bangalore') OR (city = 'Mangalore');
+
+-- +-----------+---------------+-----------+
+-- | client_no | name          | city      |
+-- +-----------+---------------+-----------+
+-- | C00004    | Ashwini Joshi | Bangalore |
+-- | C00006    | Deepak Sharma | Mangalore |
+-- +-----------+---------------+-----------+
+-- 2 rows in set (0.00 sec)
+
+-- d
+
+SELECT client_no, name
+FROM client_master
+WHERE bal_due > 10000;
+
+-- +-----------+--------------+
+-- | client_no | name         |
+-- +-----------+--------------+
+-- | C00001    | Ivan Bayross |
+-- +-----------+--------------+
+-- 1 row in set (0.00 sec)
+
+-- e
+
+SELECT * FROM sales_order
+WHERE order_date BETWEEN '04-06-01' AND '04-06-30';
+
+-- +----------+-----------+------------+-----------+-------------+-----------+---------+------------+--------------+
+-- | order_no | client_no | order_date | dely_addr | salesman_no | dely_type | bill_yn | dely_date  | order_status |
+-- +----------+-----------+------------+-----------+-------------+-----------+---------+------------+--------------+
+-- | O19001   | C00001    | 2004-06-12 | Mumbai    | S00001      | F         | N       | 2002-07-20 | In Process   |
+-- | O19002   | C00002    | 2004-06-25 | Surat     | S00002      | P         | N       | 2002-06-27 | Cancelled    |
+-- +----------+-----------+------------+-----------+-------------+-----------+---------+------------+--------------+
+-- 2 rows in set (0.00 sec)
+
+-- f
+
+SELECT * FROM sales_order
+WHERE (client_no = 'C00001') OR (client_no = 'C00002');
+
+-- +----------+-----------+------------+-----------+-------------+-----------+---------+------------+--------------+
+-- | order_no | client_no | order_date | dely_addr | salesman_no | dely_type | bill_yn | dely_date  | order_status |
+-- +----------+-----------+------------+-----------+-------------+-----------+---------+------------+--------------+
+-- | O19001   | C00001    | 2004-06-12 | Mumbai    | S00001      | F         | N       | 2002-07-20 | In Process   |
+-- | O19003   | C00001    | 2004-04-03 | Surat     | S00001      | F         | Y       | 2002-04-07 | Fulfilled    |
+-- | O19002   | C00002    | 2004-06-25 | Surat     | S00002      | P         | N       | 2002-06-27 | Cancelled    |
+-- +----------+-----------+------------+-----------+-------------+-----------+---------+------------+--------------+
+-- 3 rows in set (0.00 sec)
+
+-- g
+
+SELECT product_no, description
+FROM product_master
+WHERE (sell_price > 500) OR (sell_price <= 750);
+
+-- +------------+--------------+
+-- | product_no | description  |
+-- +------------+--------------+
+-- | P00001     | T-Shirts     |
+-- | P0345      | Shirts       |
+-- | P06734     | Cotton Jeans |
+-- | P07865     | Jeans        |
+-- | P07868     | Trousers     |
+-- | P07885     | Pull Overs   |
+-- | P07965     | Denim Shirts |
+-- | P07975     | Lycra Tops   |
+-- | P08865     | Skirts       |
+-- +------------+--------------+
+-- 9 rows in set (0.00 sec)
+
+-- h
+
+SELECT product_no, description, sell_price "old_price", (sell_price * 0.15) "new_price"
+FROM product_master
+WHERE sell_price > 500;
+
+-- +------------+--------------+-----------+-----------+
+-- | product_no | description  | old_price | new_price |
+-- +------------+--------------+-----------+-----------+
+-- | P06734     | Cotton Jeans |    600.00 |   90.0000 |
+-- | P07865     | Jeans        |    750.00 |  112.5000 |
+-- | P07868     | Trousers     |    850.00 |  127.5000 |
+-- | P07885     | Pull Overs   |    700.00 |  105.0000 |
+-- +------------+--------------+-----------+-----------+
+-- 4 rows in set (0.00 sec)
+
+-- i
+
+SELECT client_no, name, city, state
+FROM client_master
+WHERE state != 'Maharashtra';
+
+-- +-----------+----------------+-----------+------------+
+-- | client_no | name           | city      | state      |
+-- +-----------+----------------+-----------+------------+
+-- | C00002    | Mamta Muzumdar | Madras    | Tamil Nadu |
+-- | C00004    | Ashwini Joshi  | Bangalore | Karnataka  |
+-- | C00006    | Deepak Sharma  | Mangalore | Karnataka  |
+-- +-----------+----------------+-----------+------------+
+-- 3 rows in set (0.00 sec)
+
+-- j
+
+SELECT COUNT(*) "total_order" FROM sales_order;
+
+-- +-------------+
+-- | total_order |
+-- +-------------+
+-- |           6 |
+-- +-------------+
+-- 1 row in set (0.00 sec)
+
+-- k
+
+SELECT AVG(sell_price) FROM product_master;
+
+-- +-----------------+
+-- | AVG(sell_price) |
+-- +-----------------+
+-- |      538.888889 |
+-- +-----------------+
+-- 1 row in set (0.00 sec)
+
+-- l
+
+SELECT MAX(sell_price) "max_price", MIN(sell_price)
+FROM product_master;
+
+-- +-----------+-----------------+
+-- | max_price | MIN(sell_price) |
+-- +-----------+-----------------+
+-- |    850.00 |          300.00 |
+-- +-----------+-----------------+
+-- 1 row in set (0.00 sec)
+
+-- m
+
+SELECT COUNT(*)
+FROM product_master
+WHERE sell_price <= 500;
+
+-- +----------+
+-- | COUNT(*) |
+-- +----------+
+-- |        5 |
+-- +----------+
+-- 1 row in set (0.00 sec)
+
+-- n
+
+SELECT product_no, description
+FROM product_master
+WHERE qty_on_hand < reorder_lvl;
+
+-- Empty set (0.00 sec)
