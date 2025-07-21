@@ -403,3 +403,419 @@ FROM product_master
 WHERE qty_on_hand < reorder_lvl;
 
 -- Empty set (0.00 sec)
+
+-- Group By and Having Clause
+
+-- a
+
+SELECT product_master. product_no, product_master.description, SUM(qty_ordered) "quantity_sold"
+FROM product_master
+INNER JOIN sales_order_details on product_master.product_no = sales_order_details.product_no
+GROUP BY product_master.product_no;
+
+-- +------------+--------------+---------------+
+-- | product_no | description  | quantity_sold |
+-- +------------+--------------+---------------+
+-- | P00001     | T-Shirts     |            34 |
+-- | P07965     | Denim Shirts |             3 |
+-- | P07885     | Pull Overs   |             5 |
+-- | P07868     | Trousers     |             3 |
+-- | P0345      | Shirts       |             4 |
+-- | P06734     | Cotton Jeans |             1 |
+-- | P07975     | Lycra Tops   |             6 |
+-- +------------+--------------+---------------+
+-- 7 rows in set (0.00 sec)
+
+-- b
+
+SELECT product_master.product_no, product_master.description, SUM(qty_ordered * product_rate) "product_value"
+FROM product_master
+INNER JOIN sales_order_details ON product_master.product_no = sales_order_details.product_no
+GROUP BY sales_order_details.product_no;
+
+-- +------------+--------------+---------------+
+-- | product_no | description  | product_value |
+-- +------------+--------------+---------------+
+-- | P00001     | T-Shirts     |      17850.00 |
+-- | P07965     | Denim Shirts |      25200.00 |
+-- | P07885     | Pull Overs   |      26250.00 |
+-- | P07868     | Trousers     |       9450.00 |
+-- | P0345      | Shirts       |       4200.00 |
+-- | P06734     | Cotton Jeans |      12000.00 |
+-- | P07975     | Lycra Tops   |       6300.00 |
+-- +------------+--------------+---------------+
+-- 7 rows in set (0.00 sec)
+
+-- c
+
+SELECT AVG(qty_ordered), client_master.name
+FROM client_master
+INNER JOIN sales_order ON sales_order.client_no = client_master.client_no
+INNER JOIN sales_order_details ON sales_order_details.order_no = sales_order.order_no
+GROUP BY sales_order.client_no
+HAVING SUM(qty_ordered * product_rate) > 15000;
+
+-- +------------------+---------------+
+-- | AVG(qty_ordered) | name          |
+-- +------------------+---------------+
+-- |           2.2500 | Ivan Bayross  |
+-- |           5.0000 | Chhaya Bankar |
+-- +------------------+---------------+
+-- 2 rows in set (0.00 sec)
+
+-- d
+
+SELECT SUM(qty_ordered * product_rate) "sum"
+FROM sales_order_details
+INNER JOIN sales_order ON sales_order.order_no = sales_order_details.order_no
+INNER JOIN product_master ON product_master.product_no = sales_order_details.product_no
+WHERE order_date BETWEEN '04-06-01' AND '04-06-30';
+
+-- +----------+
+-- | sum      |
+-- +----------+
+-- | 34650.00 |
+-- +----------+
+-- 1 row in set (0.00 sec)
+
+
+-- Joins
+-- ANSI Style
+
+-- a
+
+SELECT product_master.description
+FROM product_master
+INNER JOIN sales_order_details ON sales_order_details.product_no = product_master.product_no
+INNER JOIN sales_order ON sales_order.order_no = sales_order_details.order_no
+INNER JOIN client_master ON client_master.client_no = sales_order.client_no
+WHERE client_master.name = 'Ivan Bayross';
+
+-- +--------------+
+-- | description  |
+-- +--------------+
+-- | T-Shirts     |
+-- | Denim Shirts |
+-- | Pull Overs   |
+-- | Cotton Jeans |
+-- +--------------+
+-- 4 rows in set (0.00 sec)
+
+-- b
+
+select description, qty_ordered
+from product_master
+inner join sales_order_details on sales_order_details.product_no = product_master.product_no
+inner join sales_order on sales_order.order_no = sales_order_details.order_no
+where dely_date = '2002-04-07';
+
+-- +--------------+-------------+
+-- | description  | qty_ordered |
+-- +--------------+-------------+
+-- | Cotton Jeans |           1 |
+-- +--------------+-------------+
+-- 1 row in set (0.01 sec)
+
+-- c
+
+SELECT product_master.product_no, product_master.description
+FROM product_master
+INNER JOIN sales_order_details ON sales_order_details.product_no = product_master.product_no
+INNER JOIN sales_order ON sales_order.order_no = sales_order_details.order_no
+GROUP BY product_master.product_no;
+
+-- +------------+--------------+
+-- | product_no | description  |
+-- +------------+--------------+
+-- | P00001     | T-Shirts     |
+-- | P07965     | Denim Shirts |
+-- | P07885     | Pull Overs   |
+-- | P06734     | Cotton Jeans |
+-- | P07868     | Trousers     |
+-- | P0345      | Shirts       |
+-- | P07975     | Lycra Tops   |
+-- +------------+--------------+
+-- 7 rows in set (0.00 sec)
+
+-- d
+
+SELECT client_master.name
+FROM client_master
+INNER JOIN sales_order ON sales_order.client_no = client_master.client_no
+INNER JOIN sales_order_details ON sales_order_details.order_no = sales_order.order_no
+INNER JOIN product_master ON product_master.product_no = sales_order_details.product_no
+WHERE product_master.description = 'Trousers';
+
+-- +---------------+
+-- | name          |
+-- +---------------+
+-- | Chhaya Bankar |
+-- +---------------+
+-- 1 row in set (0.00 sec)
+
+-- e
+
+SELECT client_master.name, product_master.description, sales_order_details.qty_ordered
+FROM product_master
+INNER JOIN sales_order_details ON sales_order_details.product_no = product_master.product_no
+INNER JOIN sales_order ON sales_order.order_no = sales_order_details.order_no
+INNER JOIN client_master ON client_master.client_no = sales_order.client_no
+WHERE (sales_order_details.qty_ordered < 5) AND (product_master.description = 'Pull Overs');
+
+-- +---------------+-------------+-------------+
+-- | name          | description | qty_ordered |
+-- +---------------+-------------+-------------+
+-- | Ivan Bayross  | Pull Overs  |           2 |
+-- | Chhaya Bankar | Pull Overs  |           3 |
+-- +---------------+-------------+-------------+
+-- 2 rows in set (0.01 sec)
+
+-- f
+
+SELECT client_master.name, product_master.description, sales_order_details.qty_ordered
+FROM product_master
+INNER JOIN sales_order_details ON sales_order_details.product_no = product_master.product_no
+INNER JOIN sales_order ON sales_order.order_no = sales_order_details.order_no
+INNER JOIN client_master ON client_master.client_no = sales_order.client_no
+WHERE (client_master.name = 'Ivan Bayross') OR (client_master.name = 'Mamta Muzumdar');
+
+-- +----------------+--------------+-------------+
+-- | name           | description  | qty_ordered |
+-- +----------------+--------------+-------------+
+-- | Ivan Bayross   | T-Shirts     |           4 |
+-- | Ivan Bayross   | Denim Shirts |           2 |
+-- | Ivan Bayross   | Pull Overs   |           2 |
+-- | Ivan Bayross   | Cotton Jeans |           1 |
+-- | Mamta Muzumdar | T-Shirts     |          10 |
+-- +----------------+--------------+-------------+
+-- 5 rows in set (0.00 sec)
+
+-- g
+
+SELECT client_master.name, product_master.description, sales_order_details.qty_ordered
+FROM product_master
+INNER JOIN sales_order_details ON sales_order_details.product_no = product_master.product_no
+INNER JOIN sales_order ON sales_order.order_no = sales_order_details.order_no
+INNER JOIN client_master ON client_master.client_no = sales_order.client_no
+WHERE (client_master.client_no = 'C00001') OR (client_master.client_no = 'C00002');
+
+-- +----------------+--------------+-------------+
+-- | name           | description  | qty_ordered |
+-- +----------------+--------------+-------------+
+-- | Ivan Bayross   | T-Shirts     |           4 |
+-- | Ivan Bayross   | Denim Shirts |           2 |
+-- | Ivan Bayross   | Pull Overs   |           2 |
+-- | Ivan Bayross   | Cotton Jeans |           1 |
+-- | Mamta Muzumdar | T-Shirts     |          10 |
+-- +----------------+--------------+-------------+
+-- 5 rows in set (0.00 sec)
+
+-- Theta Style
+
+-- a
+
+SELECT product_master.description
+FROM product_master, client_master, sales_order, sales_order_details
+WHERE sales_order_details.product_no = product_master.product_no
+AND sales_order.order_no = sales_order_details.order_no
+AND client_master.client_no = sales_order.client_no
+AND client_master.name = 'Ivan Bayross';
+
+-- +--------------+
+-- | description  |
+-- +--------------+
+-- | T-Shirts     |
+-- | Denim Shirts |
+-- | Pull Overs   |
+-- | Cotton Jeans |
+-- +--------------+
+-- 4 rows in set (0.00 sec)
+
+-- b
+
+SELECT product_master.description
+FROM product_master, sales_order, sales_order_details
+WHERE sales_order_details.product_no = product_master.product_no
+AND sales_order.order_no = sales_order_details.order_no
+AND sales_order.dely_date = '02-07-20';
+
+-- +--------------+
+-- | description  |
+-- +--------------+
+-- | T-Shirts     |
+-- | Denim Shirts |
+-- | Pull Overs   |
+-- +--------------+
+-- 3 rows in set (0.00 sec)
+
+-- c
+
+SELECT pm.product_no, pm.description
+FROM product_master pm, sales_order so, sales_order_details sod
+WHERE sod.order_no = so.order_no
+AND sod.product_no = pm.product_no;
+
+-- +------------+--------------+
+-- | product_no | description  |
+-- +------------+--------------+
+-- | P00001     | T-Shirts     |
+-- | P07965     | Denim Shirts |
+-- | P07885     | Pull Overs   |
+-- | P06734     | Cotton Jeans |
+-- | P00001     | T-Shirts     |
+-- | P07868     | Trousers     |
+-- | P07885     | Pull Overs   |
+-- | P00001     | T-Shirts     |
+-- | P0345      | Shirts       |
+-- | P07965     | Denim Shirts |
+-- | P07975     | Lycra Tops   |
+-- | P00001     | T-Shirts     |
+-- | P07975     | Lycra Tops   |
+-- +------------+--------------+
+-- 13 rows in set (0.00 sec)
+
+-- d
+
+SELECT cm.name
+FROM client_master cm, product_master pm, sales_order so, sales_order_details sod
+WHERE so.client_no = cm.client_no
+AND sod.order_no = so.order_no
+AND pm.product_no = sod.product_no
+AND pm.description = 'Trousers';
+
+-- +---------------+
+-- | name          |
+-- +---------------+
+-- | Chhaya Bankar |
+-- +---------------+
+-- 1 row in set (0.00 sec)
+
+-- e
+
+SELECT name, description, qty_ordered
+FROM client_master, product_master, sales_order, sales_order_details
+WHERE sales_order_details.order_no = sales_order.order_no
+AND product_master.product_no = sales_order_details.product_no
+AND client_master.client_no = sales_order.client_no
+AND (sales_order_details.qty_ordered < 5) AND (product_master.description = 'Pull Overs');
+
+-- +---------------+-------------+-------------+
+-- | name          | description | qty_ordered |
+-- +---------------+-------------+-------------+
+-- | Ivan Bayross  | Pull Overs  |           2 |
+-- | Chhaya Bankar | Pull Overs  |           3 |
+-- +---------------+-------------+-------------+
+-- 2 rows in set (0.00 sec)
+
+-- f
+
+select name, description, qty_ordered
+from client_master, product_master, sales_order, sales_order_details
+where sales_order.order_no = sales_order_details.order_no
+AND client_master.client_no = sales_order.client_no
+AND product_master.product_no = sales_order_details.product_no
+AND  (client_master.name = 'Ivan Bayross' OR client_master.name = 'Mamta Muzumdar');
+
+-- +----------------+--------------+-------------+
+-- | name           | description  | qty_ordered |
+-- +----------------+--------------+-------------+
+-- | Ivan Bayross   | T-Shirts     |           4 |
+-- | Ivan Bayross   | Denim Shirts |           2 |
+-- | Ivan Bayross   | Pull Overs   |           2 |
+-- | Ivan Bayross   | Cotton Jeans |           1 |
+-- | Mamta Muzumdar | T-Shirts     |          10 |
+-- +----------------+--------------+-------------+
+-- 5 rows in set (0.00 sec)
+
+-- g
+
+select name, description, qty_ordered
+from client_master, product_master, sales_order, sales_order_details
+where sales_order.order_no = sales_order_details.order_no
+AND client_master.client_no = sales_order.client_no
+AND product_master.product_no = sales_order_details.product_no
+AND  (client_master.client_no = 'C00001' OR client_master.client_no = 'C00002');
+
+-- +----------------+--------------+-------------+
+-- | name           | description  | qty_ordered |
+-- +----------------+--------------+-------------+
+-- | Ivan Bayross   | T-Shirts     |           4 |
+-- | Ivan Bayross   | Denim Shirts |           2 |
+-- | Ivan Bayross   | Pull Overs   |           2 |
+-- | Ivan Bayross   | Cotton Jeans |           1 |
+-- | Mamta Muzumdar | T-Shirts     |          10 |
+-- +----------------+--------------+-------------+
+-- 5 rows in set (0.00 sec)
+
+
+-- SubQuery
+
+-- a
+
+SELECT product_no, description
+FROM product_master
+WHERE product_no NOT IN (SELECT sales_order_details.product_no FROM sales_order_details WHERE sales_order_details.product_no = product_master.product_no);
+
+-- +------------+-------------+
+-- | product_no | description |
+-- +------------+-------------+
+-- | P07865     | Jeans       |
+-- | P08865     | Skirts      |
+-- +------------+-------------+
+-- 2 rows in set (0.00 sec)
+
+-- b
+
+SELECT name, address1, address2, city, pincode
+FROM client_master
+WHERE client_no = (SELECT sales_order.client_no FROM sales_order WHERE sales_order.order_no = 'O19001');
+
+-- +--------------+----------+----------+--------+---------+
+-- | name         | address1 | address2 | city   | pincode |
+-- +--------------+----------+----------+--------+---------+
+-- | Ivan Bayross | A-14     | Nandalay | Mumbai |  400054 |
+-- +--------------+----------+----------+--------+---------+
+-- 1 row in set (0.01 sec)
+
+-- c
+
+SELECT name
+FROM client_master
+WHERE client_no IN (SELECT sales_order.client_no FROM sales_order WHERE sales_order.client_no = client_master.client_no AND sales_order.dely_date BETWEEN '2002-01-01' AND '2002-04-30');
+
+-- +---------------+
+-- | name          |
+-- +---------------+
+-- | Ivan Bayross  |
+-- | Chhaya Bankar |
+-- +---------------+
+-- 2 rows in set (0.01 sec)
+
+-- d
+
+SELECT client_no, name
+FROM client_master
+WHERE client_no IN (SELECT sales_order.client_no FROM sales_order, sales_order_details, product_master WHERE sales_order.client_no = client_master.client_no AND sales_order.order_no = sales_order_details.order_no AND sales_order_details.product_no = product_master.product_no AND product_master.product_no = "P07975");
+
+-- +-----------+---------------+
+-- | client_no | name          |
+-- +-----------+---------------+
+-- | C00004    | Ashwini Joshi |
+-- | C00005    | Hansel Colaco |
+-- +-----------+---------------+
+-- 2 rows in set (0.01 sec)
+
+-- e
+
+SELECT name
+FROM client_master
+WHERE client_no IN (SELECT sales_order.client_no FROM sales_order, sales_order_details WHERE sales_order.client_no = client_master.client_no AND sales_order_details.order_no = sales_order.order_no GROUP BY client_master.name HAVING SUM(sales_order_details.qty_ordered * sales_order_details.product_rate) > 10000);
+
+-- +---------------+
+-- | name          |
+-- +---------------+
+-- | Ivan Bayross  |
+-- | Chhaya Bankar |
+-- | Hansel Colaco |
+-- +---------------+
+-- 3 rows in set (0.01 sec)
